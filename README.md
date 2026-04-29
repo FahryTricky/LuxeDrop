@@ -1,49 +1,61 @@
-# LuxeDrop - Laravel + React.js
+# LuxeDrop - Premium Vehicle Rental Management
 
-Proyek ini dibangun menggunakan **Laravel** sebagai backend dan **React.js** (dengan Inertia.js) sebagai frontend. 
+LuxeDrop adalah platform penyewaan kendaraan premium (Supercar, Luxury Car, dan Exclusive Two-Wheelers) yang dirancang dengan estetika modern dan alur kerja yang efisien. Proyek ini dibangun menggunakan teknologi mutakhir untuk memberikan pengalaman pengguna yang seamless.
 
-Secara bawaan proyek ini sudah diatur menggunakan React (tidak lagi menggunakan Blade sebagai frontend utama), sehingga Anda dapat membuat komponen UI dengan interaktif dan modern.
+## 🚀 Tech Stack
 
-## Persyaratan Sistem
+- **Backend**: [Laravel 11](https://laravel.com/)
+- **Frontend**: [React.js](https://reactjs.org/) dengan [Inertia.js](https://inertiajs.com/)
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **Maps & Location**: [Leaflet.js](https://leafletjs.com/)
+- **Distance & Routing API**: [TomTom Routing API](https://developer.tomtom.com/routing-api/documentation/product-information/introduction)
+- **Database**: MySQL
 
-Pastikan sistem Anda telah terinstal:
-- [PHP](https://www.php.net/) (minimal versi 8.2)
-- [Composer](https://getcomposer.org/)
-- [Node.js](https://nodejs.org/) & NPM
+## ✨ Fitur Utama
+
+- **Premium UI/UX**: Desain dark-mode elegan dengan ambient effects.
+- **Dynamic Fleet Management**: Manajemen unit kendaraan (Supercar, Luxury Car, Exclusive Two-Wheelers).
+- **Smart Checkout**:
+  - Peta interaktif menggunakan Leaflet.js.
+  - Perhitungan ongkir/towing dinamis berdasarkan jarak real-time (TomTom API).
+  - Validasi durasi sewa maksimal 5 hari.
+- **Active Rental Limit**: Pembatasan peminjaman maksimal 2 unit aktif per user.
+- **Admin Dashboard**: Manajemen unit, transaksi, dan update status pengiriman secara real-time.
 
 ---
 
-## Tata Cara Menjalankan Proyek (Instalasi Pertama Kali)
+## 🛠️ Persyaratan Sistem
 
-Bagi Anda yang baru saja melakukan `pull` atau `clone` proyek ini, ikuti langkah-langkah wajib berikut untuk menyiapkan proyek di komputer lokal Anda:
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- MySQL
 
-1. **Clone Repository** (lewati jika sudah)
+---
+
+## 📥 Instalasi & Setup
+
+Ikuti langkah-langkah berikut untuk menjalankan proyek di lingkungan lokal Anda:
+
+1. **Clone Repository**
    ```bash
    git clone <url-repo-anda>
    cd LuxeDrop
    ```
 
-2. **Install Dependensi PHP (Backend)**
-   Jalankan perintah berikut untuk menginstal seluruh package Laravel yang dibutuhkan:
+2. **Install Dependensi**
    ```bash
    composer install
-   ```
-
-3. **Install Dependensi Node (Frontend / React)**
-   Jalankan perintah berikut untuk menginstal package React, Tailwind CSS, Vite, dll:
-   ```bash
    npm install
    ```
 
-4. **Konfigurasi Environment**
-   Salin file template `.env` untuk membuat konfigurasi lokal Anda:
+3. **Konfigurasi Environment**
+   Salin file `.env.example` menjadi `.env`:
    ```bash
    cp .env.example .env
    ```
-   *(Catatan untuk Windows: Anda bisa menggunakan perintah `copy .env.example .env` di CMD/Powershell, atau copy-paste file secara manual melalui File Explorer).*
-
-   > **Penting**: Setelah file `.env` dibuat, buka file tersebut dan sesuaikan konfigurasi databasenya untuk menggunakan MySQL seperti contoh di bawah ini (pastikan Anda sudah membuat database kosong bernama `luxedrop_db` di phpMyAdmin/MySQL Anda):
-
+   Buka file `.env` dan masukkan konfigurasi database serta API Key berikut (Anda bisa langsung copy-paste ke bagian bawah file `.env`):
+   
    ```env
    DB_CONNECTION=mysql
    DB_HOST=127.0.0.1
@@ -51,48 +63,52 @@ Bagi Anda yang baru saja melakukan `pull` atau `clone` proyek ini, ikuti langkah
    DB_DATABASE=luxedrop_db
    DB_USERNAME=root
    DB_PASSWORD=
+
+   # TomTom API Key for Maps & Routing (ditaruh dipaling bawah)
+   VITE_TOMTOM_API_KEY="YwmzZeUtIA5kaA5Vz0ky842nQVpWSjdt"
    ```
 
-5. **Generate Application Key**
-   Buat key enkripsi untuk Laravel:
+4. **Setup Aplikasi**
    ```bash
    php artisan key:generate
-   ```
-
-6. **Migrasi Database**
-   Buat struktur tabel di database Anda:
-   ```bash
    php artisan migrate
+   php artisan db:seed # Opsional: Untuk data awal
    ```
 
 ---
 
-## Menjalankan Development Server (Sehari-hari)
+## 🚀 Menjalankan Aplikasi
 
-Untuk menjalankan aplikasi ini dengan React, Anda **wajib menjalankan dua server secara bersamaan**. Silakan buka **dua terminal terpisah**:
+Anda perlu menjalankan dua terminal secara bersamaan:
 
-### Terminal 1: Menjalankan Backend (Laravel)
-Di terminal pertama, jalankan:
+**Terminal 1 (Backend)**:
 ```bash
 php artisan serve
 ```
-*Server PHP (Laravel) akan berjalan di `http://127.0.0.1:8000`.*
 
-### Terminal 2: Menjalankan Frontend (Vite + React)
-Di terminal kedua, jalankan:
+**Terminal 2 (Frontend)**:
 ```bash
 npm run dev
 ```
-*Perintah ini akan menjalankan Vite untuk mengkompilasi file React/JSX secara realtime (Hot Module Replacement).*
 
-> 🌐 **Akses Web**: Setelah kedua perintah di atas berjalan, Anda bisa membuka browser dan mengakses `http://127.0.0.1:8000` (atau `http://localhost:8000`).
+Akses aplikasi melalui: `http://127.0.0.1:8000`
 
 ---
 
-## Struktur File Penting (Laravel + React)
+## 📁 Struktur Penting
 
-- **`routes/web.php`** : Tempat Anda mendefinisikan routing/URL aplikasi.
-- **`app/Http/Controllers/`** : Tempat logika backend (Controller). Untuk me-render halaman React dari Controller, gunakan `return inertia('NamaKomponen');`.
-- **`resources/js/Pages/`** : Folder tempat Anda membuat halaman-halaman **React (.jsx)**.
-- **`resources/js/Components/`** : Folder untuk menyimpan komponen React yang bisa dipakai berulang (reusable).
-- **`resources/views/app.blade.php`** : File entry-point HTML utama. Anda jarang perlu mengubah file ini kecuali untuk menambah tag `<head>` global.
+- `resources/js/Pages/`: Halaman utama aplikasi (React Components).
+- `resources/js/Layouts/`: Layout navigasi dan struktur global.
+- `app/Http/Controllers/`: Logika bisnis dan pengolahan data.
+- `database/migrations/`: Struktur tabel database.
+
+---
+
+## ⚖️ Aturan Bisnis (Business Rules)
+
+1. **Durasi Sewa**: Maksimal 5 hari per transaksi.
+2. **Limit Unit**: Maksimal 2 unit aktif per pengguna (Status selain 'Selesai' atau 'Dikembalikan').
+3. **Biaya Towing**: Rp 15.000 / KM (Dihitung otomatis melalui rute tercepat TomTom API).
+4. **Alamat Pengiriman**: Harus dipilih melalui marker pada peta interaktif.
+
+&copy; 2026 **LuxeDrop Team**. Semua Hak Dilindungi.

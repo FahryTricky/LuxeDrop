@@ -1,8 +1,3 @@
-import InputError from '@/Components/InputError';
-import InputLabel from '@/Components/InputLabel';
-import PrimaryButton from '@/Components/PrimaryButton';
-import TextInput from '@/Components/TextInput';
-import GuestLayout from '@/Layouts/GuestLayout';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Register() {
@@ -15,106 +10,101 @@ export default function Register() {
 
     const submit = (e) => {
         e.preventDefault();
-
         post(route('register'), {
             onFinish: () => reset('password', 'password_confirmation'),
         });
     };
 
     return (
-        <GuestLayout>
-            <Head title="Register" />
+        <div className="min-h-screen flex flex-col justify-center items-center px-4 py-12 bg-[#0a0a0a] text-white font-sans selection:bg-white/30 selection:text-white relative">
+            <Head title="Register - LuxeDrop" />
+            
+            {/* Ambient Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-white/[0.02] rounded-full blur-3xl pointer-events-none"></div>
 
-            <form onSubmit={submit}>
-                <div>
-                    <InputLabel htmlFor="name" value="Name" />
-
-                    <TextInput
-                        id="name"
-                        name="name"
-                        value={data.name}
-                        className="mt-1 block w-full"
-                        autoComplete="name"
-                        isFocused={true}
-                        onChange={(e) => setData('name', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.name} className="mt-2" />
+            <div className="w-full max-w-md p-10 bg-[#111] border border-white/10 relative z-10">
+                <div className="mb-10 text-center">
+                    <Link href="/" className="inline-block text-3xl font-bold tracking-tighter mb-2">LuxeDrop</Link>
+                    <p className="text-gray-400 text-sm">Bergabung dan mulai perjalanan eksklusif Anda.</p>
                 </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="email" value="Email" />
+                <form onSubmit={submit} className="flex flex-col gap-5">
+                    <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2" htmlFor="name">Nama Lengkap</label>
+                        <input
+                            id="name"
+                            name="name"
+                            value={data.name}
+                            className="w-full bg-[#0a0a0a] border border-white/10 text-white focus:border-white focus:ring-0 px-4 py-3 text-sm transition-colors"
+                            autoComplete="name"
+                            autoFocus
+                            onChange={(e) => setData('name', e.target.value)}
+                            required
+                        />
+                        {errors.name && <p className="mt-2 text-xs text-red-500">{errors.name}</p>}
+                    </div>
 
-                    <TextInput
-                        id="email"
-                        type="email"
-                        name="email"
-                        value={data.email}
-                        className="mt-1 block w-full"
-                        autoComplete="username"
-                        onChange={(e) => setData('email', e.target.value)}
-                        required
-                    />
+                    <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2" htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            name="email"
+                            value={data.email}
+                            className="w-full bg-[#0a0a0a] border border-white/10 text-white focus:border-white focus:ring-0 px-4 py-3 text-sm transition-colors"
+                            autoComplete="username"
+                            onChange={(e) => setData('email', e.target.value)}
+                            required
+                        />
+                        {errors.email && <p className="mt-2 text-xs text-red-500">{errors.email}</p>}
+                    </div>
 
-                    <InputError message={errors.email} className="mt-2" />
-                </div>
+                    <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2" htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            name="password"
+                            value={data.password}
+                            className="w-full bg-[#0a0a0a] border border-white/10 text-white focus:border-white focus:ring-0 px-4 py-3 text-sm transition-colors"
+                            autoComplete="new-password"
+                            onChange={(e) => setData('password', e.target.value)}
+                            required
+                        />
+                        {errors.password && <p className="mt-2 text-xs text-red-500">{errors.password}</p>}
+                    </div>
 
-                <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <div>
+                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2" htmlFor="password_confirmation">Konfirmasi Password</label>
+                        <input
+                            id="password_confirmation"
+                            type="password"
+                            name="password_confirmation"
+                            value={data.password_confirmation}
+                            className="w-full bg-[#0a0a0a] border border-white/10 text-white focus:border-white focus:ring-0 px-4 py-3 text-sm transition-colors"
+                            autoComplete="new-password"
+                            onChange={(e) => setData('password_confirmation', e.target.value)}
+                            required
+                        />
+                        {errors.password_confirmation && <p className="mt-2 text-xs text-red-500">{errors.password_confirmation}</p>}
+                    </div>
 
-                    <TextInput
-                        id="password"
-                        type="password"
-                        name="password"
-                        value={data.password}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) => setData('password', e.target.value)}
-                        required
-                    />
-
-                    <InputError message={errors.password} className="mt-2" />
-                </div>
-
-                <div className="mt-4">
-                    <InputLabel
-                        htmlFor="password_confirmation"
-                        value="Confirm Password"
-                    />
-
-                    <TextInput
-                        id="password_confirmation"
-                        type="password"
-                        name="password_confirmation"
-                        value={data.password_confirmation}
-                        className="mt-1 block w-full"
-                        autoComplete="new-password"
-                        onChange={(e) =>
-                            setData('password_confirmation', e.target.value)
-                        }
-                        required
-                    />
-
-                    <InputError
-                        message={errors.password_confirmation}
-                        className="mt-2"
-                    />
-                </div>
-
-                <div className="mt-4 flex items-center justify-end">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="w-full bg-white text-black font-bold uppercase tracking-widest text-xs py-4 hover:bg-gray-200 transition-colors mt-4 disabled:opacity-50"
                     >
-                        Already registered?
-                    </Link>
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Register
-                    </PrimaryButton>
-                </div>
-            </form>
-        </GuestLayout>
+                        Buat Akun
+                    </button>
+                    
+                    <div className="text-center mt-4">
+                        <span className="text-gray-500 text-sm">Sudah punya akun? </span>
+                        <Link href={route('login')} className="text-white text-sm font-semibold hover:underline">
+                            Masuk di sini
+                        </Link>
+                    </div>
+                </form>
+            </div>
+        </div>
     );
 }
