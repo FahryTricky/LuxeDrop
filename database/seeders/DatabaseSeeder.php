@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             'top_speed' => '325',
             'year' => 2023,
             'daily_price' => 22500000,
-            'image_url' => 'https://images.unsplash.com/photo-1620882814836-961ec7a111a9?auto=format&fit=crop&q=80&w=800',
+            'image_url' => 'https://images.unsplash.com/photo-1592198084033-aade902d1aae?auto=format&fit=crop&q=80&w=800',
             'is_available' => true,
         ]);
 
