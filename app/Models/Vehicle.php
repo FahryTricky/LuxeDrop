@@ -10,6 +10,7 @@ class Vehicle extends Model
     use HasFactory;
 
     protected $fillable = [
+        'unit_code',
         'name',
         'type',
         'top_speed',
@@ -18,4 +19,9 @@ class Vehicle extends Model
         'image_url',
         'is_available'
     ];
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }

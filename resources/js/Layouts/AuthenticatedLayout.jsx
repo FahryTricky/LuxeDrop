@@ -6,18 +6,18 @@ export default function AuthenticatedLayout({ user, header, children }) {
     const auth = { user };
 
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-white/30 selection:text-white pb-20 relative">
+        <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-emerald-500/30 selection:text-white pb-20 relative">
             
             {/* Ambient Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/5 rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3"></div>
-                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3"></div>
+                <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-blue-500/[0.03] rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3" />
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3" />
             </div>
 
-            <nav className="border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-md sticky top-0 z-50">
+            <nav className="border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="container mx-auto px-6 py-6 flex items-center justify-between relative">
                     <div className="flex items-center gap-8">
-                        <Link href="/" className="text-2xl font-bold tracking-tighter">LuxeDrop</Link>
+                        <Link href="/" className="text-2xl font-bold tracking-tighter hover:opacity-80 transition-opacity">LuxeDrop</Link>
                     </div>
                     
                     <div className="hidden md:flex items-center gap-10 text-sm font-medium text-gray-300 absolute left-1/2 -translate-x-1/2">
@@ -36,14 +36,14 @@ export default function AuthenticatedLayout({ user, header, children }) {
             </nav>
 
             {header && (
-                <header className="bg-white/5 border-b border-white/10 relative z-10">
+                <header className="bg-white/[0.02] border-b border-white/5 relative z-10">
                     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                         {header}
                     </div>
                 </header>
             )}
 
-            <main className="relative z-10">{children}</main>
+            <main className="relative z-10 animate-fade-in">{children}</main>
         </div>
     );
 }

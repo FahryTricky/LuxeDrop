@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\TabSession;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,15 @@ class RegisteredUserController extends Controller
         event(new Registered($user));
 
         Auth::login($user);
+
+        // Create a tab session for the registering tab
+        $tabId = $request->header('X-Tab-Id') ?? $request->input('tab_id');
+        if ($tabId) {
+            TabSession::updateOrCreate(
+                ['tab_id' => $tabId],
+                ['user_id' => $user->id, 'last_activity' => now()]
+            );
+        }
 
         return redirect('/');
     }

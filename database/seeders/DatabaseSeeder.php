@@ -27,8 +27,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $v1 = Vehicle::create([
+            'unit_code' => 'SC-0001',
             'name' => 'Porsche 911 GT3',
-            'type' => 'car',
+            'type' => 'supercar',
             'top_speed' => '318',
             'year' => 2024,
             'daily_price' => 15000000,
@@ -37,8 +38,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Vehicle::create([
+            'unit_code' => 'SC-0002',
             'name' => 'Lamborghini Huracán',
-            'type' => 'car',
+            'type' => 'supercar',
             'top_speed' => '325',
             'year' => 2023,
             'daily_price' => 22500000,
@@ -47,8 +49,9 @@ class DatabaseSeeder extends Seeder
         ]);
 
         Vehicle::create([
+            'unit_code' => 'TW-0001',
             'name' => 'Ducati Panigale V4',
-            'type' => 'motorcycle',
+            'type' => 'exclusive_two_wheelers',
             'top_speed' => '299',
             'year' => 2024,
             'daily_price' => 4800000,

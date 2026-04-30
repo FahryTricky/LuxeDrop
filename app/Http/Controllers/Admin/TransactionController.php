@@ -20,7 +20,7 @@ class TransactionController extends Controller
     public function update(Request $request, Transaction $transaction)
     {
         $validated = $request->validate([
-            'status' => 'required|in:pengecekan_mobil,menunggu_towing,proses_pengiriman,pengiriman_selesai',
+            'status' => 'required|in:pengecekan_mobil,menunggu_towing,proses_pengiriman,pengiriman_selesai,dikembalikan',
         ]);
 
         $transaction->update($validated);

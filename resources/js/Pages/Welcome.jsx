@@ -270,7 +270,7 @@ export default function Welcome({ auth, recentVehicles = [], totalUsers = 0, tot
                                     Hubungi <span className="font-light italic text-gray-400">Admin.</span>
                                 </h2>
                                 <p className="text-gray-400 text-lg leading-relaxed mb-12">
-                                    Butuh bantuan khusus atau ingin berkonsultasi mengenai armada kami? Tim kami tersedia 24/7 untuk melayani Anda.
+                                    Butuh bantuan khusus atau ingin berkonsultasi mengenai Luxury kami? Tim kami tersedia 24/7 untuk melayani Anda.
                                 </p>
 
                                 <div className="space-y-8">
