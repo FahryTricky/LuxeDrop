@@ -15,19 +15,14 @@ class VehicleController extends Controller
     {
         $vehicles = Vehicle::latest()->paginate(10);
 
-        // KPI 1: Total unit count
-        $totalUnits = Vehicle::count();
-
-        // KPI 2: Penyewa aktif (unit yang sedang disewa - status bukan 'dikembalikan')
+        $totalUnits    = Vehicle::count();
         $activeRentals = Transaction::where('status', '!=', 'dikembalikan')->count();
-
-        // KPI 3: Pendapatan minggu ini
         $weeklyRevenue = Transaction::where('created_at', '>=', Carbon::now()->startOfWeek())
             ->sum('total_price');
 
         return Inertia::render('Admin/Vehicles/Index', [
-            'vehicles' => $vehicles,
-            'totalUnits' => $totalUnits,
+            'vehicles'      => $vehicles,
+            'totalUnits'    => $totalUnits,
             'activeRentals' => $activeRentals,
             'weeklyRevenue' => $weeklyRevenue,
         ]);
@@ -41,13 +36,13 @@ class VehicleController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'unit_code' => 'required|string|max:50|unique:vehicles,unit_code',
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:supercar,luxury_car,exclusive_two_wheelers',
-            'top_speed' => 'required|string',
-            'year' => 'required|integer',
-            'daily_price' => 'required|numeric|min:0',
-            'image_url' => 'nullable|url|max:2048',
+            'unit_code'  => 'required|string|max:50|unique:vehicles,unit_code',
+            'name'       => 'required|string|max:255',
+            'type'       => 'required|in:supercar,luxury_car,exclusive_two_wheelers',
+            'top_speed'  => 'required|string',
+            'year'       => 'required|integer',
+            'daily_price'=> 'required|numeric|min:0',
+            'image_url'  => 'nullable|url|max:2048',
         ]);
 
         Vehicle::create($validated);
@@ -62,13 +57,13 @@ class VehicleController extends Controller
     public function update(Request $request, Vehicle $vehicle)
     {
         $validated = $request->validate([
-            'unit_code' => 'required|string|max:50|unique:vehicles,unit_code,' . $vehicle->id,
-            'name' => 'required|string|max:255',
-            'type' => 'required|in:supercar,luxury_car,exclusive_two_wheelers',
-            'top_speed' => 'required|string',
-            'year' => 'required|integer',
-            'daily_price' => 'required|numeric|min:0',
-            'image_url' => 'nullable|url|max:2048',
+            'unit_code'  => 'required|string|max:50|unique:vehicles,unit_code,' . $vehicle->id,
+            'name'       => 'required|string|max:255',
+            'type'       => 'required|in:supercar,luxury_car,exclusive_two_wheelers',
+            'top_speed'  => 'required|string',
+            'year'       => 'required|integer',
+            'daily_price'=> 'required|numeric|min:0',
+            'image_url'  => 'nullable|url|max:2048',
         ]);
 
         $vehicle->update($validated);
@@ -79,5 +74,36 @@ class VehicleController extends Controller
     {
         $vehicle->delete();
         return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle deleted successfully.');
+    }
+
+    /**
+     * Mark a vehicle as available again (admin resets after return).
+     * Only allowed when the vehicle's active transaction is already 'dikembalikan'.
+     */
+    public function setAvailable(Vehicle $vehicle)
+    {
+        // Find the most recent non-returned transaction for this vehicle
+        $activeTransaction = Transaction::where('vehicle_id', $vehicle->id)
+            ->where('status', '!=', 'dikembalikan')
+            ->latest()
+            ->first();
+
+        if ($activeTransaction) {
+            $statusLabel = match($activeTransaction->status) {
+                'pengecekan_mobil'  => 'Pengecekan Mobil',
+                'menunggu_towing'   => 'Menunggu Towing',
+                'proses_pengiriman' => 'Proses Pengiriman',
+                'pengiriman_selesai'=> 'Pengiriman Selesai',
+                default             => $activeTransaction->status,
+            };
+
+            return redirect()->route('admin.vehicles.index')
+                ->with('error', "Tidak dapat mengembalikan unit \"{$vehicle->name}\" ke koleksi. Status transaksi saat ini masih \"{$statusLabel}\". Ubah status transaksi menjadi \"Dikembalikan\" terlebih dahulu melalui halaman Transaksi.");
+        }
+
+        $vehicle->update(['is_available' => true]);
+
+        return redirect()->route('admin.vehicles.index')
+            ->with('success', "Unit \"{$vehicle->name}\" telah ditandai sebagai tersedia kembali.");
     }
 }

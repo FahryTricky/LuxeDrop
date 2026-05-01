@@ -32,10 +32,11 @@ class HandleInertiaRequests extends Middleware
         $wsToken = null;
         if ($request->user()) {
             $payload = [
-                'sub' => $request->user()->id,
+                'sub'  => $request->user()->id,
                 'name' => $request->user()->name,
-                'iat' => time(),
-                'exp' => time() + (60 * 60 * 24) // 24 hours
+                'role' => $request->user()->role ?? 'user', // include role for chat authorization
+                'iat'  => time(),
+                'exp'  => time() + (60 * 60 * 24) // 24 hours
             ];
             $wsToken = \Firebase\JWT\JWT::encode($payload, env('JWT_SECRET', 'fallback_dev_secret_must_be_32_chars_long'), 'HS256');
         }

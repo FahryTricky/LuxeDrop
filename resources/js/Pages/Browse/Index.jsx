@@ -137,10 +137,19 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
 
                 {/* Vehicle Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {vehicles?.data && vehicles.data.length > 0 ? vehicles.data.map((vehicle, index) => (
+                    {vehicles?.data && vehicles.data.length > 0 ? vehicles.data.map((vehicle, index) => {
+                        const isRented   = !vehicle.is_available;
+                        const isAdmin    = auth?.user?.role === 'admin';
+                        const canRent    = !isRented && !isAdmin;
+
+                        return (
                         <div 
                             key={vehicle.id} 
-                            className="group border border-white/5 hover:border-white/10 transition-all duration-500 relative flex flex-col bg-[#0a0a0a] hover:bg-[#111] rounded-xl overflow-hidden animate-fade-in-up"
+                            className={`group border transition-all duration-500 relative flex flex-col rounded-xl overflow-hidden animate-fade-in-up ${
+                                isRented
+                                    ? 'border-white/5 bg-[#0a0a0a] opacity-70'
+                                    : 'border-white/5 hover:border-white/10 bg-[#0a0a0a] hover:bg-[#111]'
+                            }`}
                             style={{ animationDelay: `${index * 0.1}s` }}
                         >
                             {/* Type Badge */}
@@ -148,49 +157,79 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
                                 {vehicle.type === 'supercar' ? 'Supercar' : (vehicle.type === 'luxury_car' ? 'Luxury Car' : 'Two-Wheelers')}
                             </div>
 
-                            {/* Image */}
+                            {/* Rented Badge */}
+                            {isRented && (
+                                <div className="absolute top-5 right-5 z-10 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-xl px-3 py-1.5 rounded-full">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">Sudah Disewa</span>
+                                </div>
+                            )}
+
+                            {/* Image — grayscale when rented */}
                             <div className="h-64 w-full overflow-hidden relative">
                                 <img 
                                     src={vehicle.image_url || 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=800'} 
                                     alt={vehicle.name} 
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 opacity-70 group-hover:opacity-100"
+                                    className={`w-full h-full object-cover transition-all duration-1000 ${
+                                        isRented
+                                            ? 'grayscale opacity-40'
+                                            : 'group-hover:scale-110 opacity-70 group-hover:opacity-100'
+                                    }`}
                                 />
                                 <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
                             </div>
 
                             {/* Content */}
                             <div className="p-7 flex flex-col flex-1">
-                                <h3 className="text-xl font-bold truncate mb-1 group-hover:text-emerald-400 transition-colors">{vehicle.name}</h3>
+                                <h3 className={`text-xl font-bold truncate mb-1 transition-colors ${isRented ? 'text-gray-500' : 'group-hover:text-emerald-400'}`}>{vehicle.name}</h3>
                                 <p className="text-xs text-gray-600 mb-6">Unit Premium • {vehicle.year}</p>
                                 
                                 {/* Specs */}
                                 <div className="grid grid-cols-3 gap-4 mt-auto pt-6 border-t border-white/5">
                                     <div>
                                         <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Top Speed</div>
-                                        <div className="font-semibold text-sm">{vehicle.top_speed}</div>
+                                        <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.top_speed}</div>
                                     </div>
                                     <div className="border-l border-white/5 pl-4">
                                         <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Tahun</div>
-                                        <div className="font-semibold text-sm">{vehicle.year}</div>
+                                        <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.year}</div>
                                     </div>
                                     <div className="border-l border-white/5 pl-4">
                                         <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Per Hari</div>
-                                        <div className="font-semibold text-sm text-emerald-400 line-clamp-1">Rp {Number(vehicle.daily_price).toLocaleString('id-ID')}</div>
+                                        <div className={`font-semibold text-sm line-clamp-1 ${isRented ? 'text-gray-600' : 'text-emerald-400'}`}>Rp {Number(vehicle.daily_price).toLocaleString('id-ID')}</div>
                                     </div>
                                 </div>
 
-                                <Link 
-                                    href={route('checkout.show', vehicle.id)} 
-                                    className="w-full mt-6 bg-white text-black font-bold uppercase tracking-widest text-xs py-3.5 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 rounded-lg group-hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]"
-                                >
-                                    Sewa Sekarang
-                                    <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </Link>
+                                {/* CTA Button */}
+                                {isRented ? (
+                                    <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-600 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none">
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        Tidak Tersedia
+                                    </div>
+                                ) : isAdmin ? (
+                                    <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-500 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none" title="Admin tidak dapat menyewa kendaraan">
+                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                        </svg>
+                                        Khusus User
+                                    </div>
+                                ) : (
+                                    <Link 
+                                        href={route('checkout.show', vehicle.id)} 
+                                        className="w-full mt-6 bg-white text-black font-bold uppercase tracking-widest text-xs py-3.5 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 rounded-lg group-hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]"
+                                    >
+                                        Sewa Sekarang
+                                        <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </Link>
+                                )}
                             </div>
                         </div>
-                    )) : (
+                        );
+                    }) : (
                         <div className="col-span-full py-24 text-center">
                             <div className="w-20 h-20 mx-auto rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center mb-6">
                                 <svg className="w-8 h-8 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">

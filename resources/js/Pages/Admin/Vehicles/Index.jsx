@@ -1,18 +1,42 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 
 export default function AdminIndex({ auth, vehicles, totalUnits, activeRentals, weeklyRevenue }) {
     const handleDelete = (id) => {
         if (confirm('Apakah Anda yakin ingin menghapus unit kendaraan ini? Tindakan ini tidak dapat dibatalkan.')) {
-            router.delete(route('admin.vehicles.destroy', id), {
-                preserveScroll: true,
-            });
+            router.delete(route('admin.vehicles.destroy', id), { preserveScroll: true });
         }
     };
+
+    const handleSetAvailable = (vehicle) => {
+        if (confirm(`Tandai "${vehicle.name}" sebagai tersedia kembali?\n\nPastikan:\n✓ Unit sudah benar-benar dikembalikan oleh penyewa.\n✓ Status transaksi sudah diubah menjadi "Dikembalikan" di halaman Transaksi.`)) {
+            router.patch(route('admin.vehicles.setAvailable', vehicle.id), {}, { preserveScroll: true });
+        }
+    };
+
+    const { flash } = usePage().props.auth;
 
     return (
         <AdminLayout auth={auth}>
             <Head title="Manajemen Kendaraan - LuxeDrop" />
+
+            {/* Flash Messages */}
+            {flash?.error && (
+                <div className="mb-6 animate-fade-in bg-red-500/10 border border-red-500/30 rounded-xl p-4 flex items-start gap-3">
+                    <svg className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p className="text-red-400 text-sm leading-relaxed">{flash.error}</p>
+                </div>
+            )}
+            {flash?.success && (
+                <div className="mb-6 animate-fade-in bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 flex items-center gap-3">
+                    <svg className="w-5 h-5 text-emerald-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p className="text-emerald-400 text-sm">{flash.success}</p>
+                </div>
+            )}
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-10 animate-fade-in-up">
                 <div>
@@ -81,12 +105,13 @@ export default function AdminIndex({ auth, vehicles, totalUnits, activeRentals, 
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tipe</th>
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Tahun</th>
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Harga / Hari</th>
+                                <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status</th>
                                 <th className="p-5 pr-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-right">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
                             {vehicles.data.map((vehicle) => (
-                                <tr key={vehicle.id} className="hover:bg-white/[0.03] transition-colors group">
+                                <tr key={vehicle.id} className={`transition-colors group ${vehicle.is_available ? 'hover:bg-white/[0.03]' : 'bg-red-500/[0.03] hover:bg-red-500/[0.05]'}`}>
                                     <td className="p-5 pl-6">
                                         <span className="bg-white/5 border border-white/10 px-3 py-1.5 rounded-md text-xs font-mono text-emerald-400 font-bold">
                                             {vehicle.unit_code}
@@ -97,7 +122,7 @@ export default function AdminIndex({ auth, vehicles, totalUnits, activeRentals, 
                                             <img
                                                 src={vehicle.image_url || 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=200'}
                                                 alt={vehicle.name}
-                                                className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity"
+                                                className={`w-full h-full object-cover transition-opacity ${vehicle.is_available ? 'opacity-80 group-hover:opacity-100' : 'grayscale opacity-50'}`}
                                             />
                                         </div>
                                     </td>
@@ -113,8 +138,35 @@ export default function AdminIndex({ auth, vehicles, totalUnits, activeRentals, 
                                     </td>
                                     <td className="p-5 text-sm text-gray-400 font-mono">{vehicle.year}</td>
                                     <td className="p-5 text-sm font-medium text-emerald-400">Rp {Number(vehicle.daily_price).toLocaleString('id-ID')}</td>
+                                    {/* Status badge */}
+                                    <td className="p-5">
+                                        {vehicle.is_available ? (
+                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 w-fit">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                                Tersedia
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-400 border border-red-500/20 w-fit">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                                Disewa
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="p-5 pr-6 text-right">
-                                        <div className="flex items-center justify-end gap-3">
+                                        <div className="flex items-center justify-end gap-2">
+                                            {/* Set Available button — only when rented */}
+                                            {!vehicle.is_available && (
+                                                <button
+                                                    onClick={() => handleSetAvailable(vehicle)}
+                                                    className="flex items-center gap-1.5 px-3 h-8 rounded-lg border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase tracking-wider hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-colors"
+                                                    title="Tandai unit sebagai tersedia kembali"
+                                                >
+                                                    <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                    </svg>
+                                                    Kembalikan
+                                                </button>
+                                            )}
                                             <Link
                                                 href={route('admin.vehicles.edit', vehicle.id)}
                                                 className="w-8 h-8 rounded-lg border border-white/10 bg-white/5 flex items-center justify-center hover:bg-blue-500/10 hover:border-blue-500/20 transition-colors group/btn"

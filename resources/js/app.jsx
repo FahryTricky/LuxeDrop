@@ -34,8 +34,13 @@ createInertiaApp({
         /**
          * On initial page load (full browser GET), the X-Tab-Id header isn't sent
          * because it's a normal browser request, not an XHR/Inertia request.
-         * We do a silent Inertia reload after mount to re-fetch auth data
+         * We do a silent Inertia reload after mount to re-fetch all props
          * with the correct tab session. Only runs once per page load.
+         *
+         * NOTE: We intentionally do NOT use `only: ['auth']` here because that
+         * would cause a partial reload that wipes page-specific props (e.g.
+         * `transactions`, `vehicles`) from the component state — leaving the
+         * page blank until the user navigates away and back.
          */
         if (!window.__tabSessionResolved) {
             window.__tabSessionResolved = true;
@@ -43,8 +48,7 @@ createInertiaApp({
             if (tabId) {
                 // Small delay to let the page render first, then reload with correct auth
                 setTimeout(() => {
-                    router.reload({ 
-                        only: ['auth'],
+                    router.reload({
                         headers: { 'X-Tab-Id': tabId },
                     });
                 }, 100);

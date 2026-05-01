@@ -148,11 +148,6 @@ class ChatService {
                     this.handlers.onAuthSuccess(parsed.users);
                 }
                 break;
-            case 'global_message':
-                if (this.handlers.onGlobalMessage) {
-                    this.handlers.onGlobalMessage(parsed);
-                }
-                break;
             case 'private_message':
                 if (this.handlers.onPrivateMessage) {
                     this.handlers.onPrivateMessage(parsed);

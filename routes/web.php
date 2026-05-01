@@ -41,6 +41,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Admin Routes
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
         Route::resource('vehicles', VehicleController::class);
+        Route::patch('vehicles/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('vehicles.setAvailable');
         Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)->only(['index', 'update']);
     });
 });
