@@ -1,0 +1,21 @@
+{
+  "name": "chat-service",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/websocket-server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/websocket-server.js",
+    "dev": "node --watch server/websocket-server.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "ws": "^8.20.0"
+  }
+}

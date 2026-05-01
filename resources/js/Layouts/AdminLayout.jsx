@@ -1,10 +1,14 @@
 import { Link } from '@inertiajs/react';
 import UserMenu from '@/Components/UserMenu';
+import { ChatProvider } from '@/context/ChatContext';
+import ChatWidget from '@/Components/ChatWidget';
 
 export default function AdminLayout({ auth, children }) {
     return (
-        <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-emerald-500/30 selection:text-white pb-20">
-            {/* Ambient Background Elements */}
+        <ChatProvider user={auth.user} token={auth.wsToken}>
+            <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-emerald-500/30 selection:text-white pb-20">
+                {auth.user && <ChatWidget currentUser={auth.user} />}
+                {/* Ambient Background Elements */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/[0.04] rounded-full blur-[150px] -translate-y-1/2 translate-x-1/3" />
                 <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/[0.03] rounded-full blur-[120px] translate-y-1/3 -translate-x-1/3" />
@@ -49,6 +53,7 @@ export default function AdminLayout({ auth, children }) {
             <main className="container mx-auto px-6 mt-12 relative z-10 animate-fade-in">
                 {children}
             </main>
-        </div>
+            </div>
+        </ChatProvider>
     );
 }

@@ -1,11 +1,41 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage, router } from '@inertiajs/react';
 import UserMenu from '@/Components/UserMenu';
+import { ChatProvider, useChat } from '@/context/ChatContext';
+import ChatWidget from '@/Components/ChatWidget';
+
+function ChatTriggerButton({ isAuthenticated }) {
+    const chatContext = useChat();
+    
+    const handleClick = (e) => {
+        e.preventDefault();
+        if (!isAuthenticated) {
+            router.get(route('login'));
+        } else if (chatContext && chatContext.setIsChatOpen) {
+            chatContext.setIsChatOpen(true);
+        }
+    };
+
+    return (
+        <button
+            onClick={handleClick}
+            className="inline-flex items-center gap-3 bg-emerald-500 text-black px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-emerald-400 transition-colors relative z-10"
+        >
+            Hubungi Admin via Live Chat
+            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+        </button>
+    );
+}
 
 export default function Welcome({ auth, recentVehicles = [], totalUsers = 0, totalVehicles = 0 }) {
+    const { auth: pageAuth } = usePage().props;
+
     return (
-        <>
+        <ChatProvider user={auth?.user} token={pageAuth?.wsToken}>
             <Head title="LuxeDrop - Penyewaan Kendaraan Premium" />
             <div className="bg-[#0a0a0a] text-white font-sans selection:bg-white/30 selection:text-white">
+                {auth?.user && <ChatWidget currentUser={auth.user} />}
 
                 {/* HERO SECTION */}
                 <section className="relative min-h-screen flex flex-col">
@@ -303,18 +333,9 @@ export default function Welcome({ auth, recentVehicles = [], totalUsers = 0, tot
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-[80px] pointer-events-none"></div>
                                 <h3 className="text-2xl font-bold mb-6 relative z-10">Prosedur Pengembalian</h3>
                                 <p className="text-gray-400 mb-8 relative z-10 leading-relaxed">
-                                    Ingin melakukan pengembalian unit sebelum atau tepat waktu? Silakan hubungi admin kami melalui WhatsApp untuk koordinasi penjemputan unit oleh tim towing kami.
+                                    Ingin melakukan pengembalian unit sebelum atau tepat waktu? Silakan gunakan fitur Live Chat untuk berkoordinasi dengan admin terkait penjemputan unit oleh tim towing kami.
                                 </p>
-                                <a
-                                    href="https://wa.me/628123456789"
-                                    target="_blank"
-                                    className="inline-flex items-center gap-3 bg-emerald-500 text-black px-8 py-4 font-bold uppercase tracking-widest text-xs hover:bg-emerald-400 transition-colors relative z-10"
-                                >
-                                    Hubungi Admin (WhatsApp)
-                                    <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                                    </svg>
-                                </a>
+                                <ChatTriggerButton isAuthenticated={!!auth?.user} />
                             </div>
                         </div>
                     </div>
@@ -325,6 +346,6 @@ export default function Welcome({ auth, recentVehicles = [], totalUsers = 0, tot
                     &copy; 2026 LuxeDrop. Semua Hak Dilindungi.
                 </footer>
             </div>
-        </>
+        </ChatProvider>
     );
 }
