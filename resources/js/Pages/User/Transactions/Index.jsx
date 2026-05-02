@@ -1,7 +1,21 @@
 import { Head, Link } from '@inertiajs/react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
+import Modal from '@/Components/Modal';
+import { useState } from 'react';
 
 export default function UserTransactions({ auth, transactions }) {
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+
+    const openModal = (trx) => {
+        setSelectedTransaction(trx);
+        setShowModal(true);
+    };
+
+    const closeModal = () => {
+        setShowModal(false);
+        setTimeout(() => setSelectedTransaction(null), 300);
+    };
     const getStatusColor = (status) => {
         switch(status) {
             case 'pengecekan_mobil': return 'text-blue-400 bg-blue-500/10 border-blue-500/20';
@@ -60,12 +74,13 @@ export default function UserTransactions({ auth, transactions }) {
                                             <th className="p-5 font-semibold">Total Harga</th>
                                             <th className="p-5 font-semibold">Status</th>
                                             <th className="p-5 pr-6 font-semibold text-right">Tanggal Sewa</th>
+                                            <th className="p-5 font-semibold text-center">Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {transactions.length === 0 ? (
                                             <tr>
-                                                <td colSpan="5" className="p-16 text-center">
+                                                <td colSpan="6" className="p-16 text-center">
                                                     <div className="w-16 h-16 mx-auto rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center mb-4">
                                                         <svg className="w-7 h-7 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
@@ -111,6 +126,11 @@ export default function UserTransactions({ auth, transactions }) {
                                                     <td className="p-5 pr-6 text-right text-sm text-gray-500">
                                                         {new Date(trx.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
                                                     </td>
+                                                    <td className="p-5 text-center">
+                                                        <button onClick={() => openModal(trx)} className="btn-emerald py-1.5 px-3 rounded text-xs">
+                                                            Detail
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                             ))
                                         )}
@@ -140,8 +160,15 @@ export default function UserTransactions({ auth, transactions }) {
                                                 {getStatusLabel(trx.status)}
                                             </span>
                                         </div>
-                                        <p className="text-emerald-400 font-bold text-sm mt-1">Rp {Number(trx.total_price).toLocaleString('id-ID')}</p>
-                                        <p className="text-xs text-gray-600 mt-1">{trx.duration_days} Hari • {new Date(trx.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                        <div className="flex justify-between items-end">
+                                            <div>
+                                                <p className="text-emerald-400 font-bold text-sm mt-1">Rp {Number(trx.total_price).toLocaleString('id-ID')}</p>
+                                                <p className="text-xs text-gray-600 mt-1">{trx.duration_days} Hari • {new Date(trx.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                            </div>
+                                            <button onClick={() => openModal(trx)} className="btn-emerald py-1 px-3 rounded text-xs whitespace-nowrap">
+                                                Detail
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             ))}
@@ -149,6 +176,98 @@ export default function UserTransactions({ auth, transactions }) {
                     </div>
                 </div>
             </div>
+
+            <Modal show={showModal} onClose={closeModal} maxWidth="2xl">
+                {selectedTransaction && (
+                    <div className="bg-[#111] p-6 text-white rounded-xl border border-white/10 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/[0.05] rounded-full blur-[80px] pointer-events-none" />
+                        
+                        <div className="flex justify-between items-start mb-6 border-b border-white/10 pb-4 relative z-10">
+                            <div>
+                                <h2 className="text-xl font-bold">Detail Transaksi</h2>
+                                <p className="text-xs text-gray-500 mt-1">#{selectedTransaction.id.toString().padStart(6, '0')} • {new Date(selectedTransaction.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            </div>
+                            <button onClick={closeModal} className="text-gray-500 hover:text-white transition-colors">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                            </button>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Informasi Unit</h3>
+                                    <div className="flex items-center gap-3 bg-white/[0.02] p-3 rounded-lg border border-white/5">
+                                        <img src={selectedTransaction.vehicle.image_url} alt={selectedTransaction.vehicle.name} className="w-16 h-12 rounded object-cover" />
+                                        <div>
+                                            <p className="font-bold text-sm">{selectedTransaction.vehicle.name}</p>
+                                            <p className="text-xs text-gray-400">{selectedTransaction.vehicle.type}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Rute Pengiriman</h3>
+                                    <div className="bg-white/[0.02] p-4 rounded-lg border border-white/5 text-sm space-y-3">
+                                        <div className="flex gap-3">
+                                            <div className="flex flex-col items-center mt-1">
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                <div className="w-0.5 h-full bg-white/10 my-1"></div>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 mb-0.5">Titik Awal (Pickup)</p>
+                                                <p className="font-medium text-gray-200">{selectedTransaction.pickup_address || 'Mall Cijantung, Jakarta Timur'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex gap-3">
+                                            <div className="flex flex-col items-center">
+                                                <div className="w-2 h-2 rounded-full bg-blue-500 mt-1"></div>
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-500 mb-0.5">Tujuan (Delivery)</p>
+                                                <p className="font-medium text-gray-200">{selectedTransaction.delivery_address || '-'}</p>
+                                            </div>
+                                        </div>
+                                        <div className="pt-2 mt-2 border-t border-white/5 flex items-center justify-between text-xs">
+                                            <span className="text-gray-400">Total Jarak</span>
+                                            <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">{selectedTransaction.distance_km || 0} km</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Rincian Pembayaran</h3>
+                                    <div className="bg-white/[0.02] p-4 rounded-lg border border-white/5 space-y-3 text-sm">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Sewa ({selectedTransaction.duration_days} Hari)</span>
+                                            <span className="text-white">Rp {Number(selectedTransaction.base_price || 0).toLocaleString('id-ID')}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Ongkos Kirim (Towing)</span>
+                                            <span className="text-white">Rp {Number(selectedTransaction.towing_price || 0).toLocaleString('id-ID')}</span>
+                                        </div>
+                                        {Number(selectedTransaction.penalty_price) > 0 && (
+                                            <div className="flex justify-between text-red-400">
+                                                <span>Denda Keterlambatan</span>
+                                                <span>Rp {Number(selectedTransaction.penalty_price).toLocaleString('id-ID')}</span>
+                                            </div>
+                                        )}
+                                        <div className="pt-3 border-t border-white/10 flex justify-between font-bold">
+                                            <span>Total Akhir</span>
+                                            <span className="text-emerald-400 text-lg">Rp {Number(selectedTransaction.total_price).toLocaleString('id-ID')}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-6 pt-6 border-t border-white/10 flex justify-end">
+                            <button onClick={closeModal} className="btn-ghost px-6 py-2 rounded-lg text-sm">Tutup</button>
+                        </div>
+                    </div>
+                )}
+            </Modal>
         </AuthenticatedLayout>
     );
 }

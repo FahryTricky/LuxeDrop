@@ -15,6 +15,15 @@ class Transaction extends Model
         'status',
         'duration_days',
         'total_price',
+        'user_name',
+        'user_age',
+        'user_email',
+        'delivery_address',
+        'pickup_address',
+        'distance_km',
+        'base_price',
+        'towing_price',
+        'penalty_price',
     ];
 
     public function user()

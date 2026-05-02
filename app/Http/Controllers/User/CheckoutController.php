@@ -62,6 +62,8 @@ class CheckoutController extends Controller
             'user_age'         => 'required|integer|min:18',
             'user_email'       => 'required|email',
             'delivery_address' => 'required|string',
+            'pickup_address'   => 'required|string',
+            'distance_km'      => 'required|numeric',
             'duration_days'    => 'required|integer|min:1|max:5',
             'towing_price'     => 'required|numeric',
         ]);
@@ -75,10 +77,13 @@ class CheckoutController extends Controller
             'status'           => 'pengecekan_mobil',
             'duration_days'    => $validated['duration_days'],
             'total_price'      => $totalPrice,
+            'base_price'       => $basePrice,
             'user_name'        => $validated['user_name'],
             'user_age'         => $validated['user_age'],
             'user_email'       => $validated['user_email'],
             'delivery_address' => $validated['delivery_address'],
+            'pickup_address'   => $validated['pickup_address'],
+            'distance_km'      => $validated['distance_km'],
             'towing_price'     => $validated['towing_price'],
             'penalty_price'    => 0,
         ]);

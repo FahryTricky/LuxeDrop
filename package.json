@@ -4,7 +4,7 @@
     "type": "module",
     "scripts": {
         "build": "vite build",
-        "dev": "vite"
+        "dev": "concurrently -c \"blue,green\" -n \"vite,chat\" \"vite\" \"npm run dev --prefix chat-service\""
     },
     "devDependencies": {
         "@headlessui/react": "^2.0.0",

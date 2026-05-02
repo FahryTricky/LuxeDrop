@@ -25,6 +25,8 @@ export default function Checkout({ auth, vehicle }) {
         user_age: '',
         user_email: auth.user.email,
         delivery_address: '',
+        pickup_address: 'Mall Cijantung, Jakarta Timur',
+        distance_km: 0,
         duration_days: 1,
         towing_price: 0,
     });
@@ -52,7 +54,8 @@ export default function Checkout({ auth, vehicle }) {
                 setData(prev => ({
                     ...prev,
                     towing_price: towing,
-                    delivery_address: `Titik Pengiriman (${distanceKm} km dari Mall Cijantung)`
+                    distance_km: distanceKm,
+                    delivery_address: `Titik Pengiriman`
                 }));
                 setMapInteracted(true);
             } else {

@@ -9,6 +9,7 @@ LuxeDrop adalah platform penyewaan kendaraan premium (Supercar, Luxury Car, dan 
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Maps & Location**: [Leaflet.js](https://leafletjs.com/)
 - **Distance & Routing API**: [TomTom Routing API](https://developer.tomtom.com/routing-api/documentation/product-information/introduction)
+- **Real-time Engine**: [Node.js](https://nodejs.org/) & WebSockets (Live Chat)
 - **Database**: MySQL
 
 ## ✨ Fitur Utama
@@ -20,7 +21,9 @@ LuxeDrop adalah platform penyewaan kendaraan premium (Supercar, Luxury Car, dan 
   - Perhitungan ongkir/towing dinamis berdasarkan jarak real-time (TomTom API).
   - Validasi durasi sewa maksimal 5 hari.
 - **Active Rental Limit**: Pembatasan peminjaman maksimal 2 unit aktif per user.
+- **Transaction History**: Rincian riwayat lengkap dari mana ke mana (titik awal ke tujuan) dengan kalkulasi biaya (harga sewa + ongkir).
 - **Admin Dashboard**: Manajemen unit, transaksi, dan update status pengiriman secara real-time.
+- **Live Chat**: Dukungan komunikasi real-time terintegrasi antara pelanggan dan admin menggunakan WebSocket.
 
 ---
 
@@ -79,17 +82,18 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di lingkungan lokal Anda:
 
 ## 🚀 Menjalankan Aplikasi
 
-Anda perlu menjalankan dua terminal secara bersamaan:
+Anda cukup menjalankan dua terminal secara bersamaan:
 
-**Terminal 1 (Backend)**:
+**Terminal 1 (Backend Laravel)**:
 ```bash
 php artisan serve
 ```
 
-**Terminal 2 (Frontend)**:
+**Terminal 2 (Frontend & Chat Service)**:
 ```bash
 npm run dev
 ```
+*(Catatan: Perintah `npm run dev` di atas telah dikonfigurasi untuk menjalankan server Vite dan server WebSocket secara bersamaan menggunakan library `concurrently`)*
 
 Akses aplikasi melalui: `http://127.0.0.1:8000`
 
