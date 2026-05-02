@@ -41,11 +41,32 @@ export default function Checkout({ auth, vehicle }) {
         setCalculating(true);
         try {
             const apiKey = import.meta.env.VITE_TOMTOM_API_KEY;
-            const res = await fetch(`https://api.tomtom.com/routing/1/calculateRoute/${originLocation[0]},${originLocation[1]}:${lat},${lng}/json?key=${apiKey}`);
-            const json = await res.json();
             
-            if (json.routes && json.routes.length > 0) {
-                const route = json.routes[0];
+            // Lakukan 2 request paralel: 1 untuk jarak rute, 1 untuk nama lokasi (Reverse Geocoding)
+            const [routeRes, geoRes] = await Promise.all([
+                fetch(`https://api.tomtom.com/routing/1/calculateRoute/${originLocation[0]},${originLocation[1]}:${lat},${lng}/json?key=${apiKey}`),
+                fetch(`https://api.tomtom.com/search/2/reverseGeocode/${lat},${lng}.json?key=${apiKey}`)
+            ]);
+            
+            const routeJson = await routeRes.json();
+            const geoJson = await geoRes.json();
+            
+            let locationName = "Titik Pengiriman";
+            if (geoJson.addresses && geoJson.addresses.length > 0) {
+                const addr = geoJson.addresses[0].address;
+                const parts = [];
+                if (addr.municipalitySubdivision) parts.push(addr.municipalitySubdivision); // Kecamatan/Kelurahan
+                if (addr.municipality) parts.push(addr.municipality); // Kota/Kabupaten
+                
+                if (parts.length > 0) {
+                    locationName = parts.join(', ');
+                } else if (addr.freeformAddress) {
+                    locationName = addr.freeformAddress;
+                }
+            }
+            
+            if (routeJson.routes && routeJson.routes.length > 0) {
+                const route = routeJson.routes[0];
                 const distanceKm = (route.summary.lengthInMeters / 1000).toFixed(1);
                 setDistance(distanceKm);
                 
@@ -55,7 +76,7 @@ export default function Checkout({ auth, vehicle }) {
                     ...prev,
                     towing_price: towing,
                     distance_km: distanceKm,
-                    delivery_address: `Titik Pengiriman`
+                    delivery_address: locationName
                 }));
                 setMapInteracted(true);
             } else {

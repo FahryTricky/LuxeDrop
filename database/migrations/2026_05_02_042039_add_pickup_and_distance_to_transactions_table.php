@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::table('transactions', function (Blueprint $table) {
             $table->string('pickup_address')->default('Mall Cijantung, Jakarta Timur');
             $table->decimal('distance_km', 8, 2)->default(0);
+            $table->decimal('base_price', 15, 2)->default(0);
         });
     }
 
@@ -23,7 +24,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('transactions', function (Blueprint $table) {
-            $table->dropColumn(['pickup_address', 'distance_km']);
+            $table->dropColumn(['pickup_address', 'distance_km', 'base_price']);
         });
     }
 };
