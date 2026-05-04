@@ -43,6 +43,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('vehicles', VehicleController::class);
         Route::patch('vehicles/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('vehicles.setAvailable');
         Route::resource('transactions', \App\Http\Controllers\Admin\TransactionController::class)->only(['index', 'update']);
+        Route::patch('transactions/{transaction}/dates', [\App\Http\Controllers\Admin\TransactionController::class, 'updateDates'])->name('transactions.updateDates');
     });
 });
 

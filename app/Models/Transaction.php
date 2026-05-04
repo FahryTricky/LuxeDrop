@@ -24,6 +24,13 @@ class Transaction extends Model
         'base_price',
         'towing_price',
         'penalty_price',
+        'start_date',
+        'end_date',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
     ];
 
     public function user()

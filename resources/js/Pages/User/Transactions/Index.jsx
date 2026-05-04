@@ -124,7 +124,14 @@ export default function UserTransactions({ auth, transactions }) {
                                                         </span>
                                                     </td>
                                                     <td className="p-5 pr-6 text-right text-sm text-gray-500">
-                                                        {new Date(trx.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                                        {trx.start_date && trx.end_date ? (
+                                                            <>
+                                                                <div className="text-emerald-400 font-medium">{new Date(trx.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                                                <div className="text-[10px] mt-0.5">s.d. {new Date(trx.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                                            </>
+                                                        ) : (
+                                                            new Date(trx.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })
+                                                        )}
                                                     </td>
                                                     <td className="p-5 text-center">
                                                         <button onClick={() => openModal(trx)} className="btn-emerald py-1.5 px-3 rounded text-xs">
@@ -163,7 +170,9 @@ export default function UserTransactions({ auth, transactions }) {
                                         <div className="flex justify-between items-end">
                                             <div>
                                                 <p className="text-emerald-400 font-bold text-sm mt-1">Rp {Number(trx.total_price).toLocaleString('id-ID')}</p>
-                                                <p className="text-xs text-gray-600 mt-1">{trx.duration_days} Hari • {new Date(trx.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                                <p className="text-xs text-gray-600 mt-1">
+                                                    {trx.duration_days} Hari • {trx.start_date ? new Date(trx.start_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }) + ' - ' + new Date(trx.end_date).toLocaleDateString('id-ID', { month: 'short', day: 'numeric' }) : new Date(trx.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', year: 'numeric' })}
+                                                </p>
                                             </div>
                                             <button onClick={() => openModal(trx)} className="btn-emerald py-1 px-3 rounded text-xs whitespace-nowrap">
                                                 Detail
@@ -237,6 +246,18 @@ export default function UserTransactions({ auth, transactions }) {
 
                             <div className="space-y-4">
                                 <div>
+                                    <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Periode Sewa</h3>
+                                    <div className="bg-white/[0.02] p-4 rounded-lg border border-white/5 space-y-3 text-sm mb-4">
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Tanggal Pengiriman</span>
+                                            <span className="text-white text-right">{selectedTransaction.start_date ? new Date(selectedTransaction.start_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'}</span>
+                                        </div>
+                                        <div className="flex justify-between text-gray-400">
+                                            <span>Tanggal Pengembalian</span>
+                                            <span className="text-white text-right">{selectedTransaction.end_date ? new Date(selectedTransaction.end_date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : '-'}</span>
+                                        </div>
+                                    </div>
+                                    
                                     <h3 className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">Rincian Pembayaran</h3>
                                     <div className="bg-white/[0.02] p-4 rounded-lg border border-white/5 space-y-3 text-sm">
                                         <div className="flex justify-between text-gray-400">

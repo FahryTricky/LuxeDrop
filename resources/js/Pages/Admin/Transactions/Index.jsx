@@ -1,7 +1,12 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
+import { useState } from 'react';
 
 export default function TransactionsIndex({ auth, transactions }) {
+    const [editingDates, setEditingDates] = useState(null); // menyimpan transaksi yang sedang diedit
+    const [dateForm, setDateForm] = useState({ start_date: '', end_date: '', duration_days: 1 });
+    const [saving, setSaving] = useState(false);
+
     const statuses = {
         pengecekan_mobil: 'Pengecekan Mobil',
         menunggu_towing: 'Menunggu Towing',
@@ -26,6 +31,91 @@ export default function TransactionsIndex({ auth, transactions }) {
             preserveScroll: true,
         });
     };
+
+    const openDateModal = (tx) => {
+        setEditingDates(tx);
+        // Fallback ke created_at jika start_date belum ada (transaksi lama)
+        const initialStart = tx.start_date || tx.created_at;
+        const initialEnd = tx.end_date || tx.created_at;
+
+        setDateForm({
+            start_date: initialStart ? initialStart.split('T')[0] : '',
+            end_date: initialEnd ? initialEnd.split('T')[0] : '',
+            duration_days: tx.duration_days || 1
+        });
+    };
+
+    const closeDateModal = () => {
+        setEditingDates(null);
+        setDateForm({ start_date: '', end_date: '', duration_days: 1 });
+    };
+
+    const handleStartDateChange = (val) => {
+        if (!val) return;
+        const start = new Date(val);
+        if (isNaN(start.getTime())) return;
+
+        const end = new Date(start);
+        end.setDate(start.getDate() + parseInt(dateForm.duration_days));
+        
+        setDateForm(prev => ({
+            ...prev,
+            start_date: val,
+            end_date: end.toISOString().split('T')[0]
+        }));
+    };
+
+    const handleDurationChange = (val) => {
+        let duration = parseInt(val) || 0;
+        if (duration > 5) duration = 5; // Batasi maksimal 5 hari
+
+        if (!dateForm.start_date) {
+            setDateForm(prev => ({ ...prev, duration_days: duration }));
+            return;
+        }
+
+        const start = new Date(dateForm.start_date);
+        if (isNaN(start.getTime())) return;
+
+        const end = new Date(start);
+        end.setDate(start.getDate() + duration);
+
+        setDateForm(prev => ({
+            ...prev,
+            duration_days: duration,
+            end_date: end.toISOString().split('T')[0]
+        }));
+    };
+
+    const handleEndDateChange = (val) => {
+        if (!val || !dateForm.start_date) return;
+        const start = new Date(dateForm.start_date);
+        const end = new Date(val);
+        if (isNaN(start.getTime()) || isNaN(end.getTime())) return;
+
+        const diffTime = end - start;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        setDateForm(prev => ({
+            ...prev,
+            end_date: val,
+            duration_days: diffDays > 0 ? diffDays : 0
+        }));
+    };
+
+    const saveDates = () => {
+        if (!dateForm.start_date || !dateForm.end_date) return;
+        setSaving(true);
+        router.patch(route('admin.transactions.updateDates', editingDates.id), dateForm, {
+            preserveScroll: true,
+            onFinish: () => {
+                setSaving(false);
+                closeDateModal();
+            },
+        });
+    };
+
+
 
     // Calculate summary stats
     const activeCount = transactions.data?.filter(t => ['proses_pengiriman', 'menunggu_towing'].includes(t.status)).length || 0;
@@ -94,7 +184,9 @@ export default function TransactionsIndex({ auth, transactions }) {
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Penyewa</th>
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Kendaraan</th>
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Durasi / Total</th>
+                                <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Periode Sewa</th>
                                 <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Status Saat Ini</th>
+                                <th className="p-5 text-[10px] font-bold text-gray-500 uppercase tracking-widest text-center">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
@@ -121,6 +213,16 @@ export default function TransactionsIndex({ auth, transactions }) {
                                         <div className="text-xs text-emerald-400 mt-0.5 font-semibold">Rp {Number(tx.total_price).toLocaleString('id-ID')}</div>
                                     </td>
                                     <td className="p-5">
+                                        {tx.start_date ? (
+                                            <div>
+                                                <div className="text-xs text-emerald-400 font-medium">{new Date(tx.start_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                                <div className="text-[10px] text-gray-500 mt-0.5">s.d. {new Date(tx.end_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</div>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-gray-600 italic">—</span>
+                                        )}
+                                    </td>
+                                    <td className="p-5">
                                         <select
                                             value={tx.status}
                                             onChange={(e) => handleStatusChange(tx.id, e.target.value)}
@@ -131,11 +233,22 @@ export default function TransactionsIndex({ auth, transactions }) {
                                             ))}
                                         </select>
                                     </td>
+                                    <td className="p-5 text-center">
+                                        <button
+                                            onClick={() => openDateModal(tx)}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 text-[10px] font-bold uppercase tracking-wider hover:bg-orange-500/20 transition-colors"
+                                        >
+                                            <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            Edit Tanggal
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                             {transactions.data.length === 0 && (
                                 <tr>
-                                    <td colSpan="5" className="p-16 text-center">
+                                    <td colSpan="7" className="p-16 text-center">
                                         <div className="w-16 h-16 mx-auto rounded-full border border-white/5 bg-white/[0.02] flex items-center justify-center mb-4">
                                             <svg className="w-7 h-7 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -170,6 +283,124 @@ export default function TransactionsIndex({ auth, transactions }) {
                     ))}
                 </div>
             )}
+
+            {/* Modal Edit Tanggal */}
+            {editingDates && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+                        onClick={closeDateModal}
+                    />
+
+                    {/* Modal Panel */}
+                    <div className="relative z-10 bg-[#111] border border-white/10 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+                        {/* Glow accent */}
+                        <div className="absolute top-0 right-0 w-48 h-48 bg-orange-500/[0.05] rounded-full blur-[60px] pointer-events-none" />
+
+                        {/* Header */}
+                        <div className="flex items-start justify-between p-6 border-b border-white/10 relative z-10">
+                            <div>
+                                <h2 className="text-lg font-bold text-white">Edit Tanggal Sewa</h2>
+                                <p className="text-xs text-gray-500 mt-1">
+                                    #{editingDates.id.toString().padStart(6, '0')} • {editingDates.user?.name} — {editingDates.vehicle?.name}
+                                </p>
+                            </div>
+                            <button onClick={closeDateModal} className="text-gray-500 hover:text-white transition-colors ml-4 flex-shrink-0">
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-5 relative z-10">
+                            {/* Tanggal Mulai */}
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">
+                                        Tanggal Mulai
+                                    </label>
+                                    <input
+                                        type="date"
+                                        value={dateForm.start_date}
+                                        onChange={e => handleStartDateChange(e.target.value)}
+                                        className="w-full bg-[#0a0a0a] border border-white/10 text-white rounded-lg px-4 py-3 text-sm focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 focus:outline-none transition-colors"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">
+                                        Durasi (Hari)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        max="5"
+                                        value={dateForm.duration_days}
+                                        onChange={e => handleDurationChange(e.target.value)}
+                                        className="w-full bg-[#0a0a0a] border border-white/10 text-white rounded-lg px-4 py-3 text-sm focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 focus:outline-none transition-colors"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Tanggal Selesai */}
+                            <div>
+                                <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-[0.2em] mb-2">
+                                    Tanggal Pengembalian (End Date)
+                                </label>
+                                <input
+                                    type="date"
+                                    value={dateForm.end_date}
+                                    min={dateForm.start_date || undefined}
+                                    onChange={e => handleEndDateChange(e.target.value)}
+                                    className="w-full bg-[#0a0a0a] border border-white/10 text-white rounded-lg px-4 py-3 text-sm focus:border-orange-500/50 focus:ring-1 focus:ring-orange-500/30 focus:outline-none transition-colors"
+                                />
+                            </div>
+
+                            <div className="bg-white/[0.02] border border-white/5 rounded-xl px-4 py-4 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <span className="text-xs text-gray-400 font-medium italic">Preview Sistem:</span>
+                                    <span className="text-sm text-white font-bold">
+                                        {dateForm.duration_days} Hari Sewa
+                                    </span>
+                                </div>
+                                <div className="pt-3 border-t border-white/5 flex items-center justify-between">
+                                    <span className="text-xs text-gray-400 font-medium italic">Estimasi Total Baru:</span>
+                                    <span className="text-sm text-emerald-400 font-bold">
+                                        Rp {((editingDates.vehicle?.daily_price * dateForm.duration_days) + Number(editingDates.towing_price || 0)).toLocaleString('id-ID')}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="flex gap-3 p-6 pt-0 relative z-10">
+                            <button
+                                onClick={closeDateModal}
+                                className="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold uppercase tracking-wider hover:bg-white/10 transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={saveDates}
+                                disabled={saving || dateForm.duration_days <= 0 || dateForm.duration_days > 5}
+                                className="flex-1 px-4 py-3 rounded-xl bg-orange-500 text-black text-sm font-bold uppercase tracking-wider hover:bg-orange-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {saving ? (
+                                    <>
+                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        Menyimpan...
+                                    </>
+                                ) : 'Simpan Tanggal'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }
+

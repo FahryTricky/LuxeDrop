@@ -20,10 +20,13 @@ const customIcon = L.icon({
 const originLocation = [-6.3155, 106.8623]; // Mall Cijantung
 
 export default function Checkout({ auth, vehicle }) {
+    const today = new Date().toISOString().split('T')[0];
+
     const { data, setData, post, processing, errors } = useForm({
         user_name: auth.user.name,
         user_age: '',
         user_email: auth.user.email,
+        start_date: today,
         delivery_address: '',
         pickup_address: 'Mall Cijantung, Jakarta Timur',
         distance_km: 0,
@@ -111,6 +114,14 @@ export default function Checkout({ auth, vehicle }) {
     const basePrice = vehicle.daily_price * data.duration_days;
     const totalPrice = basePrice + Number(data.towing_price);
 
+    // Calculate dates for display
+    const startDateObj = new Date(data.start_date);
+    const endDateObj = new Date(startDateObj);
+    endDateObj.setDate(endDateObj.getDate() + parseInt(data.duration_days));
+    const dateOptions = { day: 'numeric', month: 'short', year: 'numeric' };
+    const startDateString = startDateObj.toLocaleDateString('id-ID', dateOptions);
+    const endDateString = endDateObj.toLocaleDateString('id-ID', dateOptions);
+
     return (
         <AuthenticatedLayout
             user={auth.user}
@@ -175,16 +186,30 @@ export default function Checkout({ auth, vehicle }) {
                                         </div>
                                     </div>
 
-                                    <div>
-                                        <label className="luxe-label">Email</label>
-                                        <input
-                                            type="email"
-                                            value={data.user_email}
-                                            onChange={e => setData('user_email', e.target.value)}
-                                            className="luxe-input"
-                                            required
-                                        />
-                                        {errors.user_email && <p className="text-xs text-red-500 mt-1">{errors.user_email}</p>}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="luxe-label">Email</label>
+                                            <input
+                                                type="email"
+                                                value={data.user_email}
+                                                onChange={e => setData('user_email', e.target.value)}
+                                                className="luxe-input"
+                                                required
+                                            />
+                                            {errors.user_email && <p className="text-xs text-red-500 mt-1">{errors.user_email}</p>}
+                                        </div>
+                                        <div>
+                                            <label className="luxe-label">Tanggal Mulai Sewa</label>
+                                            <input
+                                                type="date"
+                                                value={data.start_date}
+                                                min={today}
+                                                onChange={e => setData('start_date', e.target.value)}
+                                                className="luxe-input"
+                                                required
+                                            />
+                                            {errors.start_date && <p className="text-xs text-red-500 mt-1">{errors.start_date}</p>}
+                                        </div>
                                     </div>
 
                                     <div>
@@ -315,8 +340,15 @@ export default function Checkout({ auth, vehicle }) {
                                         <span className="text-gray-500">Durasi</span>
                                         <span className="font-semibold">{data.duration_days} Hari</span>
                                     </div>
+                                    <div className="flex justify-between items-center text-sm border-b border-white/5 pb-4">
+                                        <span className="text-gray-500">Periode Sewa</span>
+                                        <div className="text-right">
+                                            <div className="font-semibold text-emerald-400">{startDateString}</div>
+                                            <div className="text-xs text-gray-500 mt-0.5">s.d. {endDateString}</div>
+                                        </div>
+                                    </div>
                                     
-                                    <div className="border-t border-white/5 pt-4 flex justify-between items-center text-sm">
+                                    <div className="pt-2 flex justify-between items-center text-sm">
                                         <span className="text-gray-500">Subtotal</span>
                                         <span className="font-semibold">Rp {basePrice.toLocaleString('id-ID')}</span>
                                     </div>

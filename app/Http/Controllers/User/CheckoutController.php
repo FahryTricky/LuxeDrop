@@ -19,7 +19,18 @@ class CheckoutController extends Controller
 
         // Check if vehicle is already rented
         if (!$vehicle->is_available) {
-            return redirect()->route('browse.index')->with('error', 'Maaf, unit ini sedang disewa oleh pelanggan lain.');
+            // Auto-available logic
+            $activeTransaction = $vehicle->transactions()->latest()->first();
+            if ($activeTransaction) {
+                $endDate = $activeTransaction->created_at->addDays($activeTransaction->duration_days);
+                if (now()->startOfDay()->greaterThanOrEqualTo($endDate->startOfDay())) {
+                    $vehicle->update(['is_available' => true]);
+                } else {
+                    return redirect()->route('browse.index')->with('error', 'Maaf, unit ini sedang disewa oleh pelanggan lain.');
+                }
+            } else {
+                return redirect()->route('browse.index')->with('error', 'Maaf, unit ini sedang disewa oleh pelanggan lain.');
+            }
         }
 
         // Check active rentals limit
@@ -61,6 +72,7 @@ class CheckoutController extends Controller
             'user_name'        => 'required|string|max:255',
             'user_age'         => 'required|integer|min:18',
             'user_email'       => 'required|email',
+            'start_date'       => 'required|date|after_or_equal:today',
             'delivery_address' => 'required|string',
             'pickup_address'   => 'required|string',
             'distance_km'      => 'required|numeric',
@@ -71,10 +83,16 @@ class CheckoutController extends Controller
         $basePrice  = $vehicle->daily_price * $validated['duration_days'];
         $totalPrice = $basePrice + $validated['towing_price'];
 
+        // Hitung End Date
+        $startDate = \Carbon\Carbon::parse($validated['start_date']);
+        $endDate = $startDate->copy()->addDays($validated['duration_days']);
+
         Transaction::create([
             'user_id'          => auth()->id(),
             'vehicle_id'       => $vehicle->id,
             'status'           => 'pengecekan_mobil',
+            'start_date'       => $startDate,
+            'end_date'         => $endDate,
             'duration_days'    => $validated['duration_days'],
             'total_price'      => $totalPrice,
             'base_price'       => $basePrice,

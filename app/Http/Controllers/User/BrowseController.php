@@ -28,7 +28,37 @@ class BrowseController extends Controller
             $query->latest();
         }
 
-        $vehicles = $query->paginate(12)->withQueryString();
+        $vehicles = $query->with(['transactions' => function($q) {
+            $q->latest();
+        }])->paginate(12)->withQueryString();
+
+        $vehicles->getCollection()->transform(function ($vehicle) {
+            if (!$vehicle->is_available && $vehicle->transactions->isNotEmpty()) {
+                $activeTransaction = $vehicle->transactions->first();
+                
+                // Gunakan end_date dari database (jika ada), jika tidak fallback ke cara lama
+                $endDate = $activeTransaction->end_date ?? $activeTransaction->created_at->addDays($activeTransaction->duration_days);
+                
+                // Cek apakah hari ini sudah melebihi atau sama dengan batas tanggal pengembalian
+                if (now()->startOfDay()->greaterThanOrEqualTo($endDate->startOfDay())) {
+                    // Otomatis mengubah status di database menjadi tersedia kembali
+                    $vehicle->update(['is_available' => true]);
+                    
+                    // Update juga data yang akan dikirim ke layar (React)
+                    $vehicle->is_available = true;
+                    $vehicle->available_in_days = null;
+                } else {
+                    // Masih dalam masa sewa
+                    $daysRemaining = now()->startOfDay()->diffInDays($endDate->startOfDay(), false);
+                    $vehicle->available_in_days = max(1, (int)$daysRemaining);
+                }
+            } else {
+                $vehicle->available_in_days = null;
+            }
+            
+            unset($vehicle->transactions);
+            return $vehicle;
+        });
 
         $filters = $request->only(['search', 'type', 'sort']);
         

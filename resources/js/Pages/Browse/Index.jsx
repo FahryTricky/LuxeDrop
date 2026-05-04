@@ -6,7 +6,7 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
     const [search, setSearch] = useState(filters?.search || '');
     const [type, setType] = useState(filters?.type || '');
     const [sort, setSort] = useState(filters?.sort || '');
-    
+
     const isInitialMount = useRef(true);
 
     useEffect(() => {
@@ -40,7 +40,7 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-emerald-500/[0.03] rounded-full blur-[150px] -translate-y-1/2" />
             </div>
-            
+
             <nav className="border-b border-white/5 bg-[#0a0a0a]/80 backdrop-blur-xl sticky top-0 z-50">
                 <div className="container mx-auto px-6 py-6 flex items-center justify-between relative">
                     <div className="flex items-center gap-8">
@@ -97,34 +97,33 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
                             <button
                                 key={f.value}
                                 onClick={() => setType(f.value)}
-                                className={`px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] rounded-full border transition-all duration-300 ${
-                                    type === f.value 
-                                        ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]' 
+                                className={`px-5 py-2.5 text-[11px] font-bold uppercase tracking-[0.15em] rounded-full border transition-all duration-300 ${type === f.value
+                                        ? 'bg-white text-black border-white shadow-[0_0_20px_rgba(255,255,255,0.15)]'
                                         : 'border-white/10 text-gray-400 hover:border-white/30 hover:text-white hover:bg-white/5'
-                                }`}
+                                    }`}
                             >
                                 {f.label}
                             </button>
                         ))}
                     </div>
-                    
+
                     <div className="flex flex-col sm:flex-row gap-3 lg:ml-auto">
                         {/* Search */}
                         <div className="relative">
                             <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                             </svg>
-                            <input 
-                                type="text" 
-                                placeholder="Cari kendaraan..." 
+                            <input
+                                type="text"
+                                placeholder="Cari kendaraan..."
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 className="bg-[#111] border border-white/10 text-white focus:border-white/30 focus:ring-0 pl-11 pr-4 py-3 text-sm w-full sm:w-64 rounded-lg transition-colors"
                             />
                         </div>
                         {/* Sort */}
-                        <select 
-                            value={sort} 
+                        <select
+                            value={sort}
                             onChange={(e) => setSort(e.target.value)}
                             className="bg-[#111] border border-white/10 text-white focus:border-white/30 focus:ring-0 px-4 py-3 text-sm w-full sm:w-52 rounded-lg transition-colors"
                         >
@@ -138,96 +137,101 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
                 {/* Vehicle Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {vehicles?.data && vehicles.data.length > 0 ? vehicles.data.map((vehicle, index) => {
-                        const isRented   = !vehicle.is_available;
-                        const isAdmin    = auth?.user?.role === 'admin';
-                        const canRent    = !isRented && !isAdmin;
+                        const isRented = !vehicle.is_available;
+                        const isAdmin = auth?.user?.role === 'admin';
+                        const canRent = !isRented && !isAdmin;
 
                         return (
-                        <div 
-                            key={vehicle.id} 
-                            className={`group border transition-all duration-500 relative flex flex-col rounded-xl overflow-hidden animate-fade-in-up ${
-                                isRented
-                                    ? 'border-white/5 bg-[#0a0a0a] opacity-70'
-                                    : 'border-white/5 hover:border-white/10 bg-[#0a0a0a] hover:bg-[#111]'
-                            }`}
-                            style={{ animationDelay: `${index * 0.1}s` }}
-                        >
-                            {/* Type Badge */}
-                            <div className="absolute top-5 left-5 z-10 border border-white/20 bg-black/60 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold tracking-[0.2em] uppercase text-white rounded-full">
-                                {vehicle.type === 'supercar' ? 'Supercar' : (vehicle.type === 'luxury_car' ? 'Luxury Car' : 'Two-Wheelers')}
-                            </div>
-
-                            {/* Rented Badge */}
-                            {isRented && (
-                                <div className="absolute top-5 right-5 z-10 flex items-center gap-1.5 bg-red-500/90 backdrop-blur-xl px-3 py-1.5 rounded-full">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                                    <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">Sudah Disewa</span>
-                                </div>
-                            )}
-
-                            {/* Image — grayscale when rented */}
-                            <div className="h-64 w-full overflow-hidden relative">
-                                <img 
-                                    src={vehicle.image_url || 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=800'} 
-                                    alt={vehicle.name} 
-                                    className={`w-full h-full object-cover transition-all duration-1000 ${
-                                        isRented
-                                            ? 'grayscale opacity-40'
-                                            : 'group-hover:scale-110 opacity-70 group-hover:opacity-100'
+                            <div
+                                key={vehicle.id}
+                                className={`group border transition-all duration-500 relative flex flex-col rounded-xl overflow-hidden animate-fade-in-up ${isRented
+                                        ? 'border-white/5 bg-[#0a0a0a] opacity-70'
+                                        : 'border-white/5 hover:border-white/10 bg-[#0a0a0a] hover:bg-[#111]'
                                     }`}
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
-                            </div>
-
-                            {/* Content */}
-                            <div className="p-7 flex flex-col flex-1">
-                                <h3 className={`text-xl font-bold truncate mb-1 transition-colors ${isRented ? 'text-gray-500' : 'group-hover:text-emerald-400'}`}>{vehicle.name}</h3>
-                                <p className="text-xs text-gray-600 mb-6">Unit Premium • {vehicle.year}</p>
-                                
-                                {/* Specs */}
-                                <div className="grid grid-cols-3 gap-4 mt-auto pt-6 border-t border-white/5">
-                                    <div>
-                                        <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Top Speed</div>
-                                        <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.top_speed}</div>
-                                    </div>
-                                    <div className="border-l border-white/5 pl-4">
-                                        <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Tahun</div>
-                                        <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.year}</div>
-                                    </div>
-                                    <div className="border-l border-white/5 pl-4">
-                                        <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Per Hari</div>
-                                        <div className={`font-semibold text-sm line-clamp-1 ${isRented ? 'text-gray-600' : 'text-emerald-400'}`}>Rp {Number(vehicle.daily_price).toLocaleString('id-ID')}</div>
-                                    </div>
+                                style={{ animationDelay: `${index * 0.1}s` }}
+                            >
+                                {/* Type Badge */}
+                                <div className="absolute top-5 left-5 z-10 border border-white/20 bg-black/60 backdrop-blur-xl px-3 py-1.5 text-[10px] font-bold tracking-[0.2em] uppercase text-white rounded-full">
+                                    {vehicle.type === 'supercar' ? 'Supercar' : (vehicle.type === 'luxury_car' ? 'Luxury Car' : 'Two-Wheelers')}
                                 </div>
 
-                                {/* CTA Button */}
-                                {isRented ? (
-                                    <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-600 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none">
-                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                        </svg>
-                                        Tidak Tersedia
+                                {/* Rented Badge */}
+                                {isRented && (
+                                    <div className="absolute top-5 right-5 z-10 flex flex-col items-end gap-1.5">
+                                        <div className="flex items-center gap-1.5 bg-red-500/90 backdrop-blur-xl px-3 py-1.5 rounded-full shadow-lg shadow-red-500/20">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                            <span className="text-[10px] font-bold tracking-[0.2em] uppercase text-white">Sudah Disewa</span>
+                                        </div>
+                                        {vehicle.available_in_days !== null && vehicle.available_in_days !== undefined && (
+                                            <div className="bg-black/60 border border-white/10 backdrop-blur-xl px-2.5 py-1 rounded-md text-[9px] text-orange-400 font-bold tracking-widest uppercase shadow-xl">
+                                                Tersedia {vehicle.available_in_days} Hari Lagi
+                                            </div>
+                                        )}
                                     </div>
-                                ) : isAdmin ? (
-                                    <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-500 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none" title="Admin tidak dapat menyewa kendaraan">
-                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                                        </svg>
-                                        Khusus User
-                                    </div>
-                                ) : (
-                                    <Link 
-                                        href={route('checkout.show', vehicle.id)} 
-                                        className="w-full mt-6 bg-white text-black font-bold uppercase tracking-widest text-xs py-3.5 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 rounded-lg group-hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]"
-                                    >
-                                        Sewa Sekarang
-                                        <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </Link>
                                 )}
+
+                                {/* Image — grayscale when rented */}
+                                <div className="h-64 w-full overflow-hidden relative">
+                                    <img
+                                        src={vehicle.image_url || 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&q=80&w=800'}
+                                        alt={vehicle.name}
+                                        className={`w-full h-full object-cover transition-all duration-1000 ${isRented
+                                                ? 'grayscale opacity-40'
+                                                : 'group-hover:scale-110 opacity-70 group-hover:opacity-100'
+                                            }`}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-transparent to-transparent opacity-80" />
+                                </div>
+
+                                {/* Content */}
+                                <div className="p-7 flex flex-col flex-1">
+                                    <h3 className={`text-xl font-bold truncate mb-1 transition-colors ${isRented ? 'text-gray-500' : 'group-hover:text-emerald-400'}`}>{vehicle.name}</h3>
+                                    <p className="text-xs text-gray-600 mb-6">Unit Premium • {vehicle.year}</p>
+
+                                    {/* Specs */}
+                                    <div className="grid grid-cols-3 gap-4 mt-auto pt-6 border-t border-white/5">
+                                        <div>
+                                            <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Top Speed</div>
+                                            <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.top_speed}</div>
+                                        </div>
+                                        <div className="border-l border-white/5 pl-4">
+                                            <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Tahun</div>
+                                            <div className={`font-semibold text-sm ${isRented ? 'text-gray-600' : ''}`}>{vehicle.year}</div>
+                                        </div>
+                                        <div className="border-l border-white/5 pl-4">
+                                            <div className="text-[10px] font-bold tracking-[0.1em] text-gray-600 uppercase mb-1">Per Hari</div>
+                                            <div className={`font-semibold text-sm line-clamp-1 ${isRented ? 'text-gray-600' : 'text-emerald-400'}`}>Rp {Number(vehicle.daily_price).toLocaleString('id-ID')}</div>
+                                        </div>
+                                    </div>
+
+                                    {/* CTA Button */}
+                                    {isRented ? (
+                                        <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-600 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none">
+                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                            Tidak Tersedia
+                                        </div>
+                                    ) : isAdmin ? (
+                                        <div className="w-full mt-6 bg-white/5 border border-white/10 text-gray-500 font-bold uppercase tracking-widest text-xs py-3.5 flex items-center justify-center gap-2 rounded-lg cursor-not-allowed select-none" title="Admin tidak dapat menyewa kendaraan">
+                                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                                            </svg>
+                                            Khusus User
+                                        </div>
+                                    ) : (
+                                        <Link
+                                            href={route('checkout.show', vehicle.id)}
+                                            className="w-full mt-6 bg-white text-black font-bold uppercase tracking-widest text-xs py-3.5 hover:bg-gray-100 transition-all flex items-center justify-center gap-2 rounded-lg group-hover:shadow-[0_0_25px_rgba(255,255,255,0.1)]"
+                                        >
+                                            Sewa Sekarang
+                                            <svg className="w-3.5 h-3.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <path d="M7 17L17 7M17 7H7M17 7V17" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </Link>
+                                    )}
+                                </div>
                             </div>
-                        </div>
                         );
                     }) : (
                         <div className="col-span-full py-24 text-center">
@@ -246,14 +250,14 @@ export default function BrowseIndex({ auth, vehicles = { data: [], links: [] }, 
                     <div className="flex justify-center mt-14 gap-2">
                         {vehicles.links.map((link, i) => (
                             link.url ? (
-                                <Link 
-                                    key={i} 
+                                <Link
+                                    key={i}
                                     href={link.url}
                                     className={`px-4 py-2.5 text-sm border rounded-lg transition-all ${link.active ? 'bg-white text-black border-white font-bold shadow-[0_0_15px_rgba(255,255,255,0.1)]' : 'border-white/10 text-gray-400 hover:bg-[#111] hover:text-white hover:border-white/20'}`}
                                     dangerouslySetInnerHTML={{ __html: link.label }}
                                 />
                             ) : (
-                                <span 
+                                <span
                                     key={i}
                                     className="px-4 py-2.5 text-sm border border-white/5 text-gray-600 cursor-not-allowed rounded-lg"
                                     dangerouslySetInnerHTML={{ __html: link.label }}
